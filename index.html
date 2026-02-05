@@ -463,13 +463,19 @@
 
         window.speechSynthesis.onvoiceschanged = loadVoices;
 
-        function speak(text, callback) {
+        function speak(text, callback, isExcited = false) {
             window.speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(text);
             if (voice) utterance.voice = voice;
-            utterance.rate = 0.85; // Un poco más lento
-            utterance.pitch = 1.6; // Tono alto para simular voz de niño/a
+
+            if (isExcited) {
+                utterance.rate = 1.1; // Más rápido (emoción)
+                utterance.pitch = 1.8; // Más agudo (alegría infantil)
+            } else {
+                utterance.rate = 0.85; // Normal/Lento
+                utterance.pitch = 1.6; // Voz de niño normal
+            }
 
             utterance.onend = () => {
                 if (callback) callback();
@@ -603,7 +609,7 @@
 
                 speak(praise, () => {
                     setTimeout(startNewRound, 1000);
-                });
+                }, true); // true = Voz emocionada
 
             } else {
                 // ERROR

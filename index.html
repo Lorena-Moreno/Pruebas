@@ -455,7 +455,8 @@
 
         function loadVoices() {
             const voices = window.speechSynthesis.getVoices();
-            // Priorizar voz de Google Español o similar
+            // Intentar encontrar una voz femenina en español (suelen ser más suaves)
+            // o usar la predeterminada ajustando el tono.
             voice = voices.find(v => v.lang.includes('es-MX')) ||
                 voices.find(v => v.lang.includes('es')) || null;
         }
@@ -467,8 +468,8 @@
 
             const utterance = new SpeechSynthesisUtterance(text);
             if (voice) utterance.voice = voice;
-            utterance.rate = 0.9;
-            utterance.pitch = 1.1;
+            utterance.rate = 0.85; // Un poco más lento
+            utterance.pitch = 1.6; // Tono alto para simular voz de niño/a
 
             utterance.onend = () => {
                 if (callback) callback();
@@ -498,11 +499,11 @@
                 currentShapeIndex = 0;
                 showScreen('learn-screen');
                 updateLearnScreen();
-                setTimeout(() => speakCurrentShape(), 500);
+                // Eliminado speakCurrentShape() automático para que solo suene al tocar
             } else {
                 showScreen('game-screen');
-                if (score === 0) { // Solo reseteamos si es la primera vez o si decidimos resetear en vuelta
-                    // score = 0; // Opcional: mantener score mientras no recargue
+                if (score === 0) {
+                    // score = 0; 
                 }
                 updateScoreDisplay();
                 startNewRound();
@@ -519,13 +520,13 @@
         function prevShape() {
             currentShapeIndex = (currentShapeIndex - 1 + shapes.length) % shapes.length;
             updateLearnScreen();
-            speakCurrentShape();
+            // Eliminado speak automático
         }
 
         function nextShape() {
             currentShapeIndex = (currentShapeIndex + 1) % shapes.length;
             updateLearnScreen();
-            speakCurrentShape();
+            // Eliminado speak automático
         }
 
         function speakCurrentShape() {

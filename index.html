@@ -421,6 +421,15 @@
             </div>
         </div>
 
+        <!-- Pantalla Victoria -->
+        <div id="victory-screen" class="screen">
+            <h1 style="font-size: 3rem; color: #FFC43D; text-shadow: 2px 2px #FF5D8F;">¡Felicidades!</h1>
+            <div style="font-size: 5rem;">🏆</div>
+            <p style="font-size: 1.5rem; margin: 1rem;">¡Llegaste a 200 puntos!</p>
+            <button class="btn" onclick="startApp('play')">¡Jugar de nuevo!</button>
+            <button class="btn btn-secondary" onclick="goHome()">Inicio</button>
+        </div>
+
     </div>
 
     <script>
@@ -452,6 +461,7 @@
         let targetShape = null;
         let score = 0;
         let voice = null;
+        let applauseAudio = null; // Para futuro uso si se agrega archivo, por ahora simulamos con speech
 
         function loadVoices() {
             const voices = window.speechSynthesis.getVoices();
@@ -507,10 +517,8 @@
                 updateLearnScreen();
                 // Eliminado speakCurrentShape() automático para que solo suene al tocar
             } else {
+                if (score >= 200) score = 0; // Resetear si ganaste antes
                 showScreen('game-screen');
-                if (score === 0) {
-                    // score = 0; 
-                }
                 updateScoreDisplay();
                 startNewRound();
             }
@@ -588,28 +596,61 @@
             speak(prefix + " " + targetShape.name);
         }
 
+        function showVictory() {
+            showScreen('victory-screen');
+            // Confeti masivo
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#FF5D8F', '#FFD166']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#06D6A0', '#F77F00']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            speak("¡Felicidades! ¡Ganaste el juego! ¡Eres muy inteligente!", null, true);
+        }
+
         function checkAnswer(selectedShape, cardElement) {
             if (selectedShape.id === targetShape.id) {
-                // GANAR
+                // GANAR PUNTOS
                 score += 10;
                 updateScoreDisplay();
-
-                confetti({
-                    particleCount: 120,
-                    spread: 80,
-                    origin: { y: 0.6 },
-                    colors: ['#FF5D8F', '#FFD166', '#06D6A0', '#F77F00']
-                });
 
                 // Feedback visual en la carta
                 cardElement.style.transform = "scale(1.1)";
                 cardElement.style.backgroundColor = "#d0f4de"; // Verde claro
 
-                const praise = ["¡Muy bien!", "¡Eso es!", "¡Bravo!", "¡Excelente!"][Math.floor(Math.random() * 4)];
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
 
-                speak(praise, () => {
-                    setTimeout(startNewRound, 1000);
-                }, true); // true = Voz emocionada
+                // CHEQUEAR VICTORIA GLOBAL
+                if (score >= 200) {
+                    setTimeout(showVictory, 1000);
+                } else {
+                    const praise = ["¡Muy bien!", "¡Eso es!", "¡Bravo!", "¡Excelente!"][Math.floor(Math.random() * 4)];
+                    speak(praise, () => {
+                        setTimeout(startNewRound, 1000);
+                    }, true);
+                }
 
             } else {
                 // ERROR

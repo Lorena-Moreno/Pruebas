@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aprendiendo Figuras con Amor</title>
+    <!-- Fuente amigable para niños -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Librería de Confeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #FF5D8F;
+            --secondary: #FF87AB;
+            --accent: #FFC09F;
+            --bg-color: #FFF0F3;
+            --text-color: #590D22;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 93, 143, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 135, 171, 0.15) 0%, transparent 20%);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Evitar scroll en móviles */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1, h2 {
+            font-family: 'Fredoka One', cursive;
+            color: var(--text-color);
+            text-align: center;
+            margin: 0.5rem 0;
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Contenedor Principal */
+        #app {
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Pantallas */
+        .screen {
+            flex: 1;
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Botones */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #C9184A;
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #C9184A;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            box-shadow: 0 6px 0 #C9184A;
+        }
+
+        .btn-icon {
+            font-size: 2rem;
+        }
+
+        .btn-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 4px 0 #C9184A;
+            z-index: 100;
+        }
+
+        /* Figuras (CSS Shapes) */
+        .shape-container {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 20px;
+            cursor: pointer;
+        }
+
+        .shape-container:active {
+            transform: scale(0.9);
+        }
+
+        .shape {
+            width: 150px;
+            height: 150px;
+        }
+
+        .shape-circle {
+            background-color: #EF476F; /* Rojo Rosado */
+            border-radius: 50%;
+            box-shadow: inset -10px -10px 0 rgba(0,0,0,0.1);
+        }
+
+        .shape-square {
+            background-color: #118AB2; /* Azul */
+            border-radius: 15px;
+            box-shadow: inset -10px -10px 0 rgba(0,0,0,0.1);
+        }
+
+        .shape-triangle {
+            width: 0;
+            height: 0;
+            border-left: 85px solid transparent;
+            border-right: 85px solid transparent;
+            border-bottom: 150px solid #FFD166; /* Amarillo */
+            filter: drop-shadow(-5px -5px 0 rgba(0,0,0,0.05));
+        }
+
+        .shape-rectangle {
+            width: 180px;
+            height: 120px;
+            background-color: #06D6A0; /* Verde */
+            border-radius: 15px;
+            box-shadow: inset -10px -10px 0 rgba(0,0,0,0.1);
+        }
+
+        .shape-rhombus {
+            width: 110px;
+            height: 110px;
+            background-color: #F77F00; /* Naranja */
+            transform: rotate(45deg);
+            border-radius: 10px;
+            box-shadow: inset -10px 10px 0 rgba(0,0,0,0.1);
+        }
+
+        .shape-heart {
+            background-color: #D90429; /* Rojo Intenso */
+            display: inline-block;
+            height: 90px;
+            margin: 0 10px;
+            position: relative;
+            top: 0;
+            transform: rotate(-45deg);
+            width: 90px;
+            box-shadow: inset -10px 10px 0 rgba(0,0,0,0.1);
+        }
+
+        .shape-heart:before,
+        .shape-heart:after {
+            content: "";
+            background-color: #D90429;
+            border-radius: 50%;
+            height: 90px;
+            position: absolute;
+            width: 90px;
+        }
+
+        .shape-heart:before {
+            top: -45px;
+            left: 0;
+        }
+
+        .shape-heart:after {
+            left: 45px;
+            top: 0;
+        }
+        
+        /* Contenedor especial para centrar el corazón rotado */
+        .heart-wrapper {
+            padding-top: 20px;
+        }
+
+        .shape-star {
+            margin: 50px 0;
+            position: relative;
+            display: block;
+            color: #FFC43D; /* Dorado */
+            width: 0px;
+            height: 0px;
+            border-right: 100px solid transparent;
+            border-bottom: 70px solid #FFC43D;
+            border-left: 100px solid transparent;
+            transform: rotate(35deg) scale(0.6);
+            filter: drop-shadow(-5px 5px 0 rgba(0,0,0,0.1));
+        }
+
+        .shape-star:before {
+            border-bottom: 80px solid #FFC43D;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            position: absolute;
+            height: 0;
+            width: 0;
+            top: -45px;
+            left: -65px;
+            display: block;
+            content: '';
+            transform: rotate(-35deg);
+        }
+
+        .shape-star:after {
+            position: absolute;
+            display: block;
+            color: #FFC43D;
+            top: 3px;
+            left: -105px;
+            width: 0px;
+            height: 0px;
+            border-right: 100px solid transparent;
+            border-bottom: 70px solid #FFC43D;
+            border-left: 100px solid transparent;
+            transform: rotate(-70deg);
+            content: '';
+        }
+
+        /* Navegación Nivel 1 */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none; /* Para que los clicks pasen si no es botón */
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.9);
+        }
+
+        .figure-name {
+            font-size: 3rem;
+            color: var(--text-color);
+            margin-top: 2rem;
+            font-family: 'Fredoka One', cursive;
+            min-height: 3.5rem;
+        }
+
+        /* Nivel 2: Juego */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 0 #FFE5EC;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .game-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #FFE5EC;
+        }
+        
+        /* Animaciones Incorrecto */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            border: 2px solid #FF0000;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Decoración de fondo */
+        .decoration {
+            position: absolute;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .dec-1 { top: 10%; left: 10%; font-size: 3rem; transform: rotate(-20deg); }
+        .dec-2 { bottom: 10%; right: 10%; font-size: 4rem; transform: rotate(20deg); }
+        .dec-3 { top: 20%; right: 20%; font-size: 2rem; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Fondo Decorativo -->
+    <div class="decoration dec-1">❤️</div>
+    <div class="decoration dec-2">⭐</div>
+    <div class="decoration dec-3">🌸</div>
+
+    <div id="app">
+        
+        <!-- Pantalla Inicio -->
+        <div id="home-screen" class="screen active">
+            <h1>Figuras Mágicas</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">¡Aprende con Amor y Amistad!</p>
+            
+            <button class="btn" onclick="startApp('learn')">
+                <span class="btn-icon">📖</span> Aprender
+            </button>
+            <button class="btn btn-secondary" onclick="startApp('play')">
+                <span class="btn-icon">🎮</span> Jugar
+            </button>
+        </div>
+
+        <!-- Pantalla Aprendizaje -->
+        <div id="learn-screen" class="screen">
+            <button class="btn btn-home" onclick="goHome()">🏠</button>
+            
+            <div id="learn-shape-display" class="shape-container" onclick="speakCurrentShape()">
+                <!-- La figura se inserta aquí -->
+            </div>
+            
+            <div class="figure-name" id="learn-name">Círculo</div>
+            <p style="color: #bbb; margin-top: 10px;">(Toca la figura)</p>
+
+            <div class="nav-controls">
+                <button class="nav-btn" onclick="prevShape()">❮</button>
+                <button class="nav-btn" onclick="nextShape()">❯</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Juego -->
+        <div id="game-screen" class="screen">
+            <button class="btn btn-home" onclick="goHome()">🏠</button>
+            
+            <h2 id="question-text" style="font-size: 1.5rem; margin-bottom: 10px;">¿Dónde está el...?</h2>
+            <button class="btn" style="padding: 10px 20px; font-size: 1rem;" onclick="repeatQuestion()">🔊 Repetir</button>
+
+            <div class="game-grid" id="game-grid">
+                <!-- Opciones generadas por JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATOS ---
+        const shapes = [
+            { id: 'circle', name: 'Círculo', html: '<div class="shape shape-circle"></div>' },
+            { id: 'square', name: 'Cuadrado', html: '<div class="shape shape-square"></div>' },
+            { id: 'triangle', name: 'Triángulo', html: '<div class="shape shape-triangle"></div>' },
+            { id: 'rectangle', name: 'Rectángulo', html: '<div class="shape shape-rectangle"></div>' },
+            { id: 'rhombus', name: 'Rombo', html: '<div class="shape shape-rhombus"></div>' },
+            { id: 'heart', name: 'Corazón', html: '<div class="heart-wrapper"><div class="shape shape-heart"></div></div>' },
+            { id: 'star', name: 'Estrella', html: '<div style="padding-top:20px; padding-left:20px;"><div class="shape shape-star"></div></div>' }
+        ];
+
+        // --- ESTADO ---
+        let currentShapeIndex = 0;
+        let targetShape = null;
+        let isSpeaking = false;
+
+        // --- VOCES ---
+        let voice = null;
+        
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            // Buscar voz en español
+            voice = voices.find(v => v.lang.includes('es')) || null;
+        }
+
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        function speak(text, callback) {
+            // Cancelar habla anterior
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (voice) utterance.voice = voice;
+            utterance.rate = 0.9; // Un poco más lento para niños
+            utterance.pitch = 1.1; // Un poco más agudo (amigable)
+            
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playSound(type) {
+            // Implementación básica de sonidos con AudioContext para no depender de archivos externos
+            // O simplemente usar speech para feedback si no hay archivos.
+            // Aquí usaremos speech para feedback verbal + efectos visuales.
+        }
+
+        // --- NAVEGACIÓN ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goHome() {
+            showScreen('home-screen');
+            window.speechSynthesis.cancel();
+        }
+
+        function startApp(mode) {
+            // Inicializar audio context si fuera necesario (aquí usamos Speech API)
+            // Asegurar carga de voces
+            if (!voice) loadVoices();
+
+            if (mode === 'learn') {
+                currentShapeIndex = 0;
+                showScreen('learn-screen');
+                updateLearnScreen();
+                // Esperar un momento a que la transición termine antes de hablar
+                setTimeout(() => speakCurrentShape(), 500);
+            } else {
+                showScreen('game-screen');
+                startNewRound();
+            }
+        }
+
+        // --- LÓGICA NIVEL 1 (APRENDER) ---
+        function updateLearnScreen() {
+            const shape = shapes[currentShapeIndex];
+            document.getElementById('learn-shape-display').innerHTML = shape.html;
+            document.getElementById('learn-name').innerText = shape.name;
+        }
+
+        function prevShape() {
+            currentShapeIndex = (currentShapeIndex - 1 + shapes.length) % shapes.length;
+            updateLearnScreen();
+            speakCurrentShape();
+        }
+
+        function nextShape() {
+            currentShapeIndex = (currentShapeIndex + 1) % shapes.length;
+            updateLearnScreen();
+            speakCurrentShape();
+        }
+
+        function speakCurrentShape() {
+            const shape = shapes[currentShapeIndex];
+            // Animación pequeña al hablar
+            const el = document.getElementById('learn-shape-display');
+            el.style.transform = "scale(1.1)";
+            setTimeout(() => el.style.transform = "scale(1)", 200);
+            
+            speak(shape.name);
+        }
+
+        // --- LÓGICA NIVEL 2 (JUEGO) ---
+        function startNewRound() {
+            // Elegir figura objetivo al azar
+            targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+            
+            // Elegir distractores (asegurar que no sean el objetivo y sean únicos)
+            let options = [targetShape];
+            while (options.length < 3) { // 3 opciones en total
+                const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+                if (!options.includes(randomShape)) {
+                    options.push(randomShape);
+                }
+            }
+            
+            // Mezclar opciones
+            options.sort(() => Math.random() - 0.5);
+
+            // Renderizar
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+            
+            // Ajustar grid si hay 3 elementos (una fila de 2 y una centrada, o layout flex)
+            // Para simplicidad en grid de 2 columnas, el 3ro quedará abajo solito, está bien.
+            
+            options.forEach(shape => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerHTML = shape.html;
+                // Escalar figuras un poco abajo para que quepan bien en las cartas
+                const innerShape = card.firstChild;
+                if(innerShape) innerShape.style.transform = "scale(0.6)";
+                
+                card.onclick = () => checkAnswer(shape, card);
+                grid.appendChild(card);
+            });
+
+            repeatQuestion();
+        }
+
+        function repeatQuestion() {
+            document.getElementById('question-text').innerText = "¿Dónde está el " + targetShape.name + "?";
+            speak("¿Dónde está el " + targetShape.name + "?");
+        }
+
+        function checkAnswer(selectedShape, cardElement) {
+            if (selectedShape.id === targetShape.id) {
+                // CORRECTO
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#FF5D8F', '#FFD166', '#06D6A0']
+                });
+                
+                speak("¡Excelente! Encontraste el " + targetShape.name, () => {
+                    setTimeout(startNewRound, 1000);
+                });
+                
+            } else {
+                // INCORRECTO
+                cardElement.classList.add('shake');
+                speak("Ese no es. Intenta de nuevo.");
+                setTimeout(() => cardElement.classList.remove('shake'), 500);
+            }
+        }
+
+    </script>
+</body>
+</html>
